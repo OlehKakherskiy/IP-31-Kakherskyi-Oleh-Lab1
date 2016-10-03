@@ -1,4 +1,7 @@
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -7,7 +10,7 @@ import java.util.stream.Collectors;
  */
 public class Decoder {
 
-    private DecryptionResult baseDecryption;
+    private DecryptionResult bestDecryption;
 
     private List<String> vocabulary;
 
@@ -25,57 +28,75 @@ public class Decoder {
     public DecryptionResult decode(String encryptedText) throws IOException {
         System.out.println("starts decoding...");
         System.out.println("generating base decryption key ...");
-        baseDecryption = getBaseDecryption(encryptedText);
-        System.out.println(baseDecryption);
-        while (!baseDecryption.isRightDecryption()) {
-            Map<String, String> newKey = generateKey(baseDecryption.getKey());
+        bestDecryption = getBaseDecryption(encryptedText);
+        int collisionsCount = 0;
+        DecryptionResult currentDecryption = bestDecryption;
+        while (!currentDecryption.isRightDecryption()) {
+            Map<String, String> newKey = (collisionsCount >= 1000) ? shuffleKey() : generateKey(bestDecryption.getKey());
             if (generatedKeys.contains(newKey)) {
-                System.out.println("contains key");
+//                System.out.println("contains key");
+                collisionsCount++;
                 continue;
             }
+            collisionsCount = 0;
             generatedKeys.add(newKey);
             System.out.println("keys generated = " + generatedKeys.size());
-            DecryptionResult currentDecryption =
+            currentDecryption =
                     DecryptionAnalyzer.isRightDecryption(decryptText(encryptedText, newKey), newKey, vocabulary);
-            System.out.println(currentDecryption);
-            chooseBetterDecryption(baseDecryption, currentDecryption);
+            System.out.println("currentDecryption = " + currentDecryption);
+            System.out.println("bestDecryption = " + bestDecryption);
+            chooseBetterDecryption(bestDecryption, currentDecryption);
         }
-        return baseDecryption;
+        return bestDecryption;
+    }
+
+    private Map<String, String> shuffleKey() {
+        try {
+            PrintWriter pw = new PrintWriter(new File("res.txt"));
+            pw.println(bestDecryption.toString());
+            bestDecryption = null;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        List<String> letters = Arrays.stream(alphabet.split("")).collect(Collectors.toList());
+        List<String> shuffledLetters = letters.stream().collect(Collectors.toList());
+        Collections.shuffle(shuffledLetters);
+        Map<String, String> key = new HashMap<>();
+        for (int i = 0; i < letters.size(); i++) {
+            key.put(letters.get(i), shuffledLetters.get(i));
+        }
+        System.out.println("shuffled key" + key);
+        return key;
     }
 
     private void chooseBetterDecryption(DecryptionResult prevDecryption, DecryptionResult currentDecryption) {
-        System.out.println("Choosing better decryption...");
-        if (currentDecryption.isRightDecryption() || currentDecryption.decryptedLetters() >= prevDecryption.decryptedLetters()) {
-            this.baseDecryption = currentDecryption;
-        } else {
-            System.out.println("Даём шанс худшему ключу стать базовым");
-            double baseKeyCompletion = prevDecryption.decryptedLetters() / alphabet.length();
-            double currentKeyCompletion = currentDecryption.decryptedLetters() / alphabet.length();
-            if (shouldBeChanged(currentKeyCompletion, baseKeyCompletion)) {
-                this.baseDecryption = currentDecryption;
-                System.out.println("Худший ключ стал базовым");
-            } else {
-                System.out.println("Базовый ключ не изменился");
-                this.baseDecryption = prevDecryption;
-            }
+        if(prevDecryption == null){
+            System.out.println("After shuffle there's no best decryption");
+            bestDecryption = currentDecryption;
+            return;
         }
+        if (currentDecryption.isRightDecryption() || currentDecryption.getChiCriterion() <= prevDecryption.getChiCriterion()) {
+            bestDecryption = currentDecryption;
+            System.out.println("new base decryption");
+        } else {
+//            System.out.println("base decryption is left: " + prevDecryption);
+//        else
+        }
+//            bestDecryption = getChanceToWorseDecryption() ? currentDecryption : prevDecryption;
+//        }
+//        System.out.println("prev decryption chi = " + prevDecryption.getChiCriterion());
+//        System.out.println("current decryption chi = " + currentDecryption.getChiCriterion());
     }
 
-    private boolean shouldBeChanged(double currentKeyCompletion, double baseKeyCompletion) {
-        double randomValue = Math.random();
-        return randomValue >= currentKeyCompletion && randomValue <= baseKeyCompletion;
-    }
+//    private boolean getChanceToWorseDecryption() {
+//        return Math.random() <= 0.01;
+//    }
 
     private Map<String, String> generateKeyByEmpiricalQuantities(Map<String, Double> empiricalQuantities) {
         Map<String, String> targetKey = new HashMap<>();
         String sortedLettersByTheoreticalQuantity = "etaoinsrhldcumfgpwybvkjxzq";
-        List<String> sortedLettersByEmpiricalQuantity =
-                empiricalQuantities.entrySet().stream()
-                        .sorted((o1, o2) -> o1.getValue().compareTo(o2.getValue()))
-                        .map(Map.Entry::getKey)
-                        .collect(Collectors.toList());
         int i = 0;
-        for (String letter : sortedLettersByEmpiricalQuantity) {
+        for (String letter : QuantitiesCalculator.sortLettersByEmpiricalQuantities(empiricalQuantities)) {
             targetKey.put(letter, sortedLettersByTheoreticalQuantity.charAt(i++) + "");
         }
         System.out.println("generated base key: " + targetKey.values().stream().collect(Collectors.joining()));
@@ -92,14 +113,14 @@ public class Decoder {
         }};
         String letter1 = getRandomElementFromKey(key);
         String letter2 = getRandomElementFromKey(key);
-        System.out.println("letter1 = " + letter1+" letter2 = "+letter2);
+//        System.out.println("letter1 = " + letter1 + " letter2 = " + letter2);
         if (letter1.equals(letter2))
             return key;
         String buffer = newKey.get(letter1);
         newKey.put(letter1, newKey.get(letter2));
         newKey.put(letter2, buffer);
-        System.out.println("old key:           " + key.values().stream().collect(Collectors.joining()));
-        System.out.println("generated new key: " + newKey.values().stream().collect(Collectors.joining()));
+//        System.out.println("old key:           " + key.values().stream().collect(Collectors.joining()));
+//        System.out.println("generated new key: " + newKey.values().stream().collect(Collectors.joining()));
 
         return newKey;
     }
@@ -118,7 +139,8 @@ public class Decoder {
     }
 
     private DecryptionResult getBaseDecryption(String encryptedText) {
-        Map<String, Double> empiricalQuantities = QuantitiesCalculator.calculateEmpiricalQuantities(encryptedText);
+        Map<String, Double> empiricalQuantities = QuantitiesCalculator.calculateEmpiricalQuantities(encryptedText, 1);
+        System.out.println(empiricalQuantities.size());
         Map<String, String> key = generateKeyByEmpiricalQuantities(empiricalQuantities);
         return DecryptionAnalyzer.isRightDecryption(decryptText(encryptedText, key), key, vocabulary);
     }

@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -13,10 +12,16 @@ public class DecryptionResult {
 
     private boolean isRightDecryption;
 
-    public DecryptionResult(Map<String, String> key, List<String> decryptedWords, boolean isRightDecryption) {
+    private double chiCriterion;
+
+    private String decryptedText;
+
+    public DecryptionResult(Map<String, String> key, List<String> decryptedWords, boolean isRightDecryption, double chiCriterion, String decryptedText) {
         this.key = key;
         this.decryptedWords = decryptedWords;
         this.isRightDecryption = isRightDecryption;
+        this.chiCriterion = chiCriterion;
+        this.decryptedText = decryptedText;
     }
 
     public Map<String, String> getKey() {
@@ -31,8 +36,8 @@ public class DecryptionResult {
         return isRightDecryption;
     }
 
-    public long decryptedLetters() {
-        return decryptedWords.stream().map(s -> s.split("")).flatMap(Arrays::stream).distinct().count();
+    public double getChiCriterion() {
+        return chiCriterion;
     }
 
     @Override
@@ -41,6 +46,8 @@ public class DecryptionResult {
                 "key=" + key +
                 ", decryptedWords=" + decryptedWords +
                 ", isRightDecryption=" + isRightDecryption +
+                ", chiCriterion=" + chiCriterion +
+                ", decryptedText='" + decryptedText + '\'' +
                 '}';
     }
 }
