@@ -17,6 +17,10 @@ public class DecryptionResult {
         return criterion;
     }
 
+    public String getDecryptedText() {
+        return decryptedText;
+    }
+
     public DecryptionResult(String key, double criterion, String decryptedText) {
         this.key = key;
         this.criterion = criterion;

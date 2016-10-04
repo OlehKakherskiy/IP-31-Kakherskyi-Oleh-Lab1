@@ -2,6 +2,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,8 +20,11 @@ public class Decoder {
 
     private Random random = new Random();
 
+    private List<String> vocabulary;
+
     public Decoder(String alphabet) {
         this.alphabet = alphabet;
+//        vocabulary = Files.readAllLines(Paths.get())
     }
 
     public DecryptionResult decode(String encryptedText) throws IOException {
@@ -49,29 +54,6 @@ public class Decoder {
 
         return bestDecryption;
     }
-
-//    private Map<String, String> shuffleKey() {
-//        try {
-//            PrintWriter pw = new PrintWriter(new File("res.txt"));
-//            pw.println(bestDecryption.toString());
-//            bestDecryption = null;
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//        List<String> letters = Arrays.stream(alphabet.split("")).collect(Collectors.toList());
-//        List<String> shuffledLetters = letters.stream().collect(Collectors.toList());
-//        Collections.shuffle(shuffledLetters);
-//        Map<String, String> key = new HashMap<>();
-//        for (int i = 0; i < letters.size(); i++) {
-//            key.put(letters.get(i), shuffledLetters.get(i));
-//        }
-//        System.out.println("shuffled key" + key);
-//        return key;
-//    }
-//
-//    private void chooseBetterDecryption(DecryptionResult prevDecryption, DecryptionResult currentDecryption) {
-//        bestDecryption = (prevDecryption.getCriterion() > currentDecryption.getCriterion()) ? prevDecryption : currentDecryption;
-//    }
 
     private String swapKeyElements(String key) {
         char[] letters = key.toCharArray();
