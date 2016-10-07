@@ -1,27 +1,27 @@
-import util.QuantitiesCalculator;
-
-import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
         Decoder decoder = new Decoder("abcdefghijklmnopqrstuvwxyz");
         System.out.println("result");
+
+//        for (int i = 0; i < 130; i++) {
         DecryptionResult result = decoder.decode(("EFFPQLMEHEMVPCPYFLMVHQLUHYTCETHQEKLPVMMVHQLUWEOLFPQLIVDLWLULMVHQLUCYAUHUYDUEOSQY" +
                 "ATFFVSMUVOVWEPLPQVSPCHLYGETDYUVPQOGUYOOYWYETHQEKLPVMYWLSASVWDEWCPLSPYGDYYFWLSSYGGVPCYAEULMYO" +
                 "GYUPEKTLBVPQCYAOECASLVWFLRYGMYVWMVFLWMLNESVSNVLREOVWEPVYWSPEPVSPVMETPLSPSYUBQEPLILUOLPQYFCYAGLLT" +
                 "BVTTSQYBPQLKLSPULSATPPUCPYPQVWNYGBQEPBVTTQEHHLWVGPQLNLCMYWPEVWSSEOLMQEUEMPLUSEPFVGGLULWPHYSVPVYWSB" +
                 "VTTCYAUHUYDUEOSPVTTKLQEILMYUULMPTC").toLowerCase());
         System.out.println(result);
+//            System.out.println(i+". "+ result);
+//    }
+//        System.out.println("result = " + result);
+//        DecryptionResult result = decoder.decode(("EFFPQLMEHEMVPCPYFLMVHQLUHYTCETHQEKLPVMMVHQLUWEOLFPQLIVDLWLULMVHQLUCYAUHUYDUEOSQY" +
+//                "ATFFVSMUVOVWEPLPQVSPCHLYGETDYUVPQOGUYOOYWYETHQEKLPVMYWLSASVWDEWCPLSPYGDYYFWLSSYGGVPCYAEULMYO" +
+//                "GYUPEKTLBVPQCYAOECASLVWFLRYGMYVWMVFLWMLNESVSNVLREOVWEPVYWSPEPVSPVMETPLSPSYUBQEPLILUOLPQYFCYAGLLT" +
+//                "BVTTSQYBPQLKLSPULSATPPUCPYPQVWNYGBQEPBVTTQEHHLWVGPQLNLCMYWPEVWSSEOLMQEUEMPLUSEPFVGGLULWPHYSVPVYWSB" +
+//                "VTTCYAUHUYDUEOSPVTTKLQEILMYUULMPTC").toLowerCase());
+//        System.out.println(result);
 //        DecryptionResult result = decoder.decode(("LSSYEWRPLRFHZZFXHUZWMGUWVOSWKWFDWMRHZPPDVZVTBPAIEMSARWYSHNRBPZQCUSYCC" +
 //                "DARXWCXELAQSWGSJPROECEOHQRLELWWKSFEFJAQWWCXXLXZFGSZGHSAFLLZLCUSPWSOGLKTRNKCXIQUNGKYIVOSJIHFBCFPLOBIJIHQRF" +
 //                "WTGGNLDLFPRDGILFUWUSLWFLHLFCBXPKCVRLGWRGEIJYWCHFWIKRZVXZIAKTDZKNEDGEGGYCULHNQCFIHXCLGQLRGWLIOUFCZLGJFCEPL" +

@@ -1,9 +1,4 @@
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,62 +9,77 @@ import static util.QuantitiesCalculator.*;
  */
 public class Decoder {
 
-    private DecryptionResult bestDecryption;
+//    private DecryptionResult bestDecryption;
 
     private String alphabet;
 
-    private Random random = new Random();
+    private Map<String, Double> theoreticalQuantities;
 
-    private List<String> vocabulary;
-
-    public Decoder(String alphabet) {
+    public Decoder(String alphabet) throws IOException {
         this.alphabet = alphabet;
-//        vocabulary = Files.readAllLines(Paths.get())
+        theoreticalQuantities = getTheoreticalQuantities("resources/3-gramms.txt");
     }
 
     public DecryptionResult decode(String encryptedText) throws IOException {
         System.out.println("starts decoding...");
         System.out.println("generating base decryption key ...");
-        Map<String, Double> theoreticalQuantities = getTheoreticalQuantities("resources/3-gramms.txt");
-        bestDecryption = new DecryptionResult(alphabet,
-                calculateCriterion(prepareNGramms(decryptText(encryptedText, alphabet), 3),
-                        theoreticalQuantities),
-                decryptText(encryptedText, alphabet));
-        int keyNotChangedIterations = 0;
-        int maxKeyNotChangedIterations = 1000;
 
-        while (keyNotChangedIterations < maxKeyNotChangedIterations) {
-            String newKey = swapKeyElements(bestDecryption.getKey());
-            String decryptedText = decryptText(encryptedText, newKey);
-            DecryptionResult currentDecryption = new DecryptionResult(newKey, calculateCriterion(prepareNGramms(decryptedText, 3),
-                    theoreticalQuantities), decryptedText);
-            if (bestDecryption.getCriterion() < currentDecryption.getCriterion()) {
-                bestDecryption = currentDecryption;
-                keyNotChangedIterations = 0;
+//        bestDecryption = decrypt(encryptedText, shuffleKey(), theoreticalQuantities);
+        int notChangedKey = 0;
+//        for (int i = 0; i < 1000; i++) {
+        DecryptionResult iterationBase = decrypt(encryptedText, alphabet, theoreticalQuantities);
+
+        while (notChangedKey < 900) {
+            DecryptionResult currentDecryption = decrypt(encryptedText, swapKeyElements(iterationBase.getKey()), theoreticalQuantities);
+//            System.out.println("currentDecryption = " + currentDecryption);
+            if (currentDecryption.getCriterion() > iterationBase.getCriterion()) {
+//                if (currentDecryption.getCriterion() < iterationBase.getCriterion()) {
+                iterationBase = currentDecryption;
+//                System.out.println("notChangedKey = " + notChangedKey);
+                notChangedKey = 0;
             } else {
-                keyNotChangedIterations++;
+                notChangedKey++;
             }
-
         }
+//            System.out.println("iterationBase = " + iterationBase);
+//        bestDecryption = (iterationBase.getCriterion() > bestDecryption.getCriterion()) ? iterationBase : bestDecryption;
+//            System.out.println("bestDecryption = " + bestDecryption);
+//        }
 
-        return bestDecryption;
+        return iterationBase;
     }
 
-    private String swapKeyElements(String key) {
-        char[] letters = key.toCharArray();
-        int index1 = random.nextInt(26);
-        int index2 = random.nextInt(26);
-        char buf = letters[index1];
-        letters[index1] = letters[index2];
-        letters[index2] = buf;
-        return new String(letters);
+    private DecryptionResult decrypt(String encryptedText, String key, Map<String, Double> theoreticalQuantities) {
+        String decryptedText = decryptText(encryptedText, key);
+        return new DecryptionResult(key, calculateCriterion(prepareNGramms(decryptedText, 3), theoreticalQuantities), decryptedText);
     }
 
     private String decryptText(String encryptedText, String key) {
         Map<String, String> regroupedKey = new HashMap<>();
         for (int i = 0; i < alphabet.length(); i++) {
-            regroupedKey.put(key.charAt(i) + "", alphabet.charAt(i) + "");
+            regroupedKey.put(alphabet.charAt(i) + "", key.charAt(i) + "");
         }
         return Arrays.stream(encryptedText.split("")).map(regroupedKey::get).collect(Collectors.joining());
+    }
+
+    private String shuffleKey() {
+        List<String> shuffledKey = Arrays.stream(alphabet.split("")).collect(Collectors.toList());
+        Collections.shuffle(shuffledKey);
+        return shuffledKey.stream().collect(Collectors.joining());
+    }
+
+    private String swapKeyElements(String key) {
+        return new String(swap(key.toCharArray(), nextInt(), nextInt()));
+    }
+
+    private int nextInt() {
+        return (int) (Math.random() * 26);
+    }
+
+    private char[] swap(char[] chars, int i, int j) {
+        char buf = chars[i];
+        chars[i] = chars[j];
+        chars[j] = buf;
+        return chars;
     }
 }
