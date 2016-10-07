@@ -9,8 +9,6 @@ import static util.QuantitiesCalculator.*;
  */
 public class Decoder {
 
-//    private DecryptionResult bestDecryption;
-
     private String alphabet;
 
     private Map<String, Double> theoreticalQuantities;
@@ -24,29 +22,23 @@ public class Decoder {
         System.out.println("starts decoding...");
         System.out.println("generating base decryption key ...");
 
-//        bestDecryption = decrypt(encryptedText, shuffleKey(), theoreticalQuantities);
+        DecryptionResult bestDecryption = decrypt(encryptedText, shuffleKey(), theoreticalQuantities);
         int notChangedKey = 0;
-//        for (int i = 0; i < 1000; i++) {
-        DecryptionResult iterationBase = decrypt(encryptedText, alphabet, theoreticalQuantities);
+        for (int i = 0; i < 1000; i++) {
+            DecryptionResult iterationBase = decrypt(encryptedText, shuffleKey(), theoreticalQuantities);
 
-        while (notChangedKey < 900) {
-            DecryptionResult currentDecryption = decrypt(encryptedText, swapKeyElements(iterationBase.getKey()), theoreticalQuantities);
-//            System.out.println("currentDecryption = " + currentDecryption);
-            if (currentDecryption.getCriterion() > iterationBase.getCriterion()) {
-//                if (currentDecryption.getCriterion() < iterationBase.getCriterion()) {
-                iterationBase = currentDecryption;
-//                System.out.println("notChangedKey = " + notChangedKey);
-                notChangedKey = 0;
-            } else {
-                notChangedKey++;
+            while (notChangedKey < 900) {
+                DecryptionResult currentDecryption = decrypt(encryptedText, swapKeyElements(iterationBase.getKey()), theoreticalQuantities);
+                if (currentDecryption.getCriterion() > iterationBase.getCriterion()) {
+                    iterationBase = currentDecryption;
+                    notChangedKey = 0;
+                } else {
+                    notChangedKey++;
+                }
             }
+            bestDecryption = (iterationBase.getCriterion() > bestDecryption.getCriterion()) ? iterationBase : bestDecryption;
         }
-//            System.out.println("iterationBase = " + iterationBase);
-//        bestDecryption = (iterationBase.getCriterion() > bestDecryption.getCriterion()) ? iterationBase : bestDecryption;
-//            System.out.println("bestDecryption = " + bestDecryption);
-//        }
-
-        return iterationBase;
+        return bestDecryption;
     }
 
     private DecryptionResult decrypt(String encryptedText, String key, Map<String, Double> theoreticalQuantities) {
