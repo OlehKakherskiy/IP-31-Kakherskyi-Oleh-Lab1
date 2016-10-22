@@ -6,7 +6,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -17,7 +20,7 @@ public class QuantitiesCalculator {
     public static Map<String, Double> getTheoreticalQuantities(String fileName) throws IOException {
         Map<String, Double> nGrammsQuantities;
         nGrammsQuantities = Files.lines(Paths.get(fileName))
-                .map(String::toLowerCase).map(s -> s.split(" "))
+                .map(s -> s.split(" "))
                 .collect(toMap(o -> o[0], o -> Double.parseDouble(o[1])));
         double all = nGrammsQuantities.values().stream().mapToDouble(Double::doubleValue).sum();
         return nGrammsQuantities.entrySet().stream().collect(toMap(Map.Entry::getKey, stringDoubleEntry -> Math.log10(stringDoubleEntry.getValue() / all)));
@@ -31,7 +34,6 @@ public class QuantitiesCalculator {
     }
 
     public static List<String> prepareNGramms(String decryptedText, int nGramm) {
-
         List<String> result = new ArrayList<>(decryptedText.length() / nGramm);
         for (int i = 0; i < decryptedText.length() - nGramm + 1; i++) {
             result.add(decryptedText.substring(i, i + nGramm));

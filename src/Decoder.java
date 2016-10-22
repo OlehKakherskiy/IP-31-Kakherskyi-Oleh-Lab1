@@ -9,13 +9,16 @@ import static util.QuantitiesCalculator.*;
  */
 public class Decoder {
 
-    private String alphabet;
+    protected String alphabet;
 
-    private Map<String, Double> theoreticalQuantities;
+    protected Map<String, Double> theoreticalQuantities;
 
-    public Decoder(String alphabet) throws IOException {
+    protected int nGrams;
+
+    public Decoder(String alphabet, int nGrams) throws IOException {
         this.alphabet = alphabet;
-        theoreticalQuantities = getTheoreticalQuantities("resources/3-gramms.txt");
+        theoreticalQuantities = getTheoreticalQuantities("resources/" + nGrams + "-gramms.txt");
+        this.nGrams = nGrams;
     }
 
     public DecryptionResult decode(String encryptedText) throws IOException {
@@ -41,12 +44,12 @@ public class Decoder {
         return bestDecryption;
     }
 
-    private DecryptionResult decrypt(String encryptedText, String key, Map<String, Double> theoreticalQuantities) {
+    protected DecryptionResult decrypt(String encryptedText, String key, Map<String, Double> theoreticalQuantities) {
         String decryptedText = decryptText(encryptedText, key);
-        return new DecryptionResult(key, calculateCriterion(prepareNGramms(decryptedText, 3), theoreticalQuantities), decryptedText);
+        return new DecryptionResult(key, calculateCriterion(prepareNGramms(decryptedText, nGrams), theoreticalQuantities), decryptedText);
     }
 
-    private String decryptText(String encryptedText, String key) {
+    protected String decryptText(String encryptedText, String key) {
         Map<String, String> regroupedKey = new HashMap<>();
         for (int i = 0; i < alphabet.length(); i++) {
             regroupedKey.put(alphabet.charAt(i) + "", key.charAt(i) + "");
